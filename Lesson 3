@@ -1,0 +1,94 @@
+# Lesson 3: Firewall Policies
+
+## Purpose
+Firewall policies are ordered rules that determine **which traffic is allowed or denied** and **how that traffic is processed** (security scanning, NAT, logging, etc.).
+
+---
+
+## Match Criteria (Per Policy)
+A policy matches traffic based on the following fields:
+
+- **Incoming Interface** → where traffic enters  
+- **Outgoing Interface** → where traffic exits  
+- **Source** → IP address/subnet, user, or group  
+- **Destination** → IP address/subnet or Internet Service (ISDB)  
+- **Service** → Destination port(s)/protocol(s) (e.g., HTTP, HTTPS, custom)  
+- **Schedule** → Time window when the policy is active
+
+**Actions:**
+- **Accept** → Permit the session (apply scanning/NAT/logging per policy config)  
+- **Deny** → Drop the session
+
+---
+
+## Addressing Options
+
+### IP Subnets (Address Objects)
+- Create a **Firewall Address** object that represents an IP, subnet, or FQDN.  
+- Use the object as **Source** or **Destination** in policies.  
+- **ALL** is available for Source/Destination to match any address (use sparingly; prefer least privilege).
+
+### Internet Service Database (ISDB)
+- ISDB provides curated **service objects** (IP ranges/signatures) for common cloud and web services.  
+- Use ISDB entries as **Destination** (or Source where applicable) to simplify policy creation for SaaS/CDN targets.  
+- Custom Internet Services can be added if needed.
+
+### User-Based Policies
+- Configure **firewall authentication** (e.g., LDAP/RADIUS/FortiAuthenticator).  
+- Reference **users or groups** in the **Source** to enforce identity-aware access control.
+
+---
+
+## Policy Order and Implicit Deny
+
+- Policies are evaluated **top to bottom** in the **Policy Table**.  
+- The **first matching** policy is applied.  
+- If **no policy** matches, traffic hits the **implicit deny** at the end and is dropped.  
+- **Best practice:** place **more specific policies above** broader ones.
+
+---
+
+## Post-Accept Processing
+
+When a policy **Accepts** traffic, FortiGate can apply:
+
+- **Security Scanning (UTM):**
+  - **Antivirus** (malware detection/quarantine/block)
+  - **Web Filtering** (category/URL/DNS filtering)
+  - **Application Control** (App-ID, block/shape apps)
+- **NAT:**
+  - **SNAT/DNAT** based on policy and interface configuration
+- **Logging:**
+  - Log allowed/denied sessions; forward to **FortiAnalyzer/SIEM** for correlation
+
+> Note: Scanning profiles can **block** traffic if threats or policy violations are detected.
+
+---
+
+## Inspection Modes
+
+### Flow-Based
+- Packet-by-packet processing with **no full-buffering**.  
+- **Lower latency**, **higher throughput**.  
+- Not suitable for features that **modify content** mid-stream (e.g., certain SafeSearch enforcements).
+
+### Proxy-Based
+- **Buffers** content and evaluates the full object/stream.  
+- Enables **deeper inspection** and **content modification** features.  
+- Typically **more thorough**, potentially **higher latency**.
+
+---
+
+## Best Practices
+
+- Use **least privilege**: scope Source/Destination/Service as narrowly as operationally feasible.  
+- Keep **specific rules** at the **top**; broader, catch-all rules at the **bottom**.  
+- Prefer **objects** (addresses, groups, services) over hardcoding IPs/ports for maintainability.  
+- Enable **logging** on both allow and deny policies relevant to investigations.  
+- Align inspection mode with requirements: **flow-based** for performance, **proxy-based** for deeper controls.  
+- Regularly **review hit counters** and remove or refine unused policies.
+
+---
+
+## Summary
+FortiGate firewall policies determine **who can talk to what, when, and how**, with ordered evaluation, least-privilege scoping, and post-accept controls (UTM, NAT, logging). Choosing the right **inspection mode** balances performance with depth of inspection to meet security and business needs.
