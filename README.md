@@ -1,0 +1,1 @@
+# FortiGate-Certified-Associate-Notes
