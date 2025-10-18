@@ -1,0 +1,78 @@
+# 🔐 Lesson 04: Authenticating Network Users  
+**Course:** FortiGate Certified Associate (FCA)  
+
+
+---
+
+## 🎯 Learning Objectives
+- Understand the importance of using firewall authentication  
+- Explain how FortiGate firewall authentication works  
+- Configure authentication on a FortiGate firewall  
+- Monitor authentication activities  
+
+---
+
+## 1️⃣ Importance of Firewall Authentication
+- **Firewall authentication** ensures users verify their identity before accessing network resources.  
+- Without authentication, FortiGate only knows a user's **source IP address**, which does not uniquely identify them.  
+- Authentication enables **user-based security policies** rather than IP-based ones — allowing more precise access control, logging, and reporting.
+
+---
+
+## 2️⃣ How FortiGate Firewall Authentication Works
+- You configure authentication by adding a **source user or user group** to a **firewall policy**.  
+- FortiGate uses **user identity** (in addition to source, destination, and service) to determine whether traffic is allowed or denied.  
+- Each user who requires access must have an account (local or remote).  
+- When traffic matches a policy that requires authentication:
+  - FortiGate presents a **login prompt (Captive Portal)**.
+  - The user authenticates.
+  - FortiGate associates the username with the session for the duration of authentication timeout.  
+
+---
+
+## 3️⃣ Configuring Authentication
+FortiGate supports two main types of authentication, depending on where user credentials are stored:
+
+### 🔸 Local Password Authentication
+- Simplest method; credentials are stored directly on the FortiGate.  
+- Ideal for **standalone** FortiGate setups.  
+- Users authenticate with a **username and password** defined locally.  
+- Users can be grouped for simplified policy management.  
+- **Best practice:** Apply policies to **user groups**, not individual accounts.  
+- Useful for **guest access** (administrators can create temporary guest accounts).  
+
+### 🔸 Remote Password Authentication
+- FortiGate sends credentials to a **remote authentication server**, such as **FortiAuthenticator**, **RADIUS**, or **LDAP/Active Directory**.  
+- FortiGate does **not** store credentials locally.  
+- Preferred when multiple FortiGate devices or services share the same user directory.  
+- Common in enterprise networks where central identity management is required.  
+
+---
+
+## 4️⃣ Monitoring Authentication
+
+### 🧩 Local Authentication Configuration Steps
+1. **Create local user accounts** on the FortiGate.  
+2. **Create a user group** and add the local user(s).  
+3. **Add the user group** to the **source** field of the desired firewall policy.  
+4. **Apply the policy** to the appropriate internal interface/subnet.  
+5. **Verify configuration** and **monitor active users** using:
+   - **Dashboard › Users & Devices**
+   - **Log & Report › Event Logs › User Events**
+
+### 🌐 Remote Authentication Configuration Steps
+1. **Add or configure** the remote authentication server (e.g., LDAP, RADIUS, FortiAuthenticator).  
+2. **Create a user group** that references remote users.  
+3. **Add the group** to the firewall policy’s source.  
+4. **Apply and test** authentication from a client device.  
+5. **Monitor sessions and logs** to confirm successful authentication.  
+
+---
+
+## 📊 Key Monitoring Tools
+- **FortiView › Users** — Displays authenticated user sessions.  
+- **System › Dashboard › Users & Devices Widget** — Shows real-time login status.  
+- **Log & Report › Event Logs › User Events** — Records authentication successes/failures.  
+- **CLI Command Example:**  
+  ```bash
+  diagnose debug authd fsso list
