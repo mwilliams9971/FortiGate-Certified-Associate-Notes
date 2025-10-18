@@ -1,0 +1,116 @@
+# Lesson 2: Configuring System Settings and Basic Networking
+
+## Administrator Accounts and Access Management
+
+### Best Practices
+- Create additional **administrator accounts** instead of relying solely on the default `admin` account.  
+  - Reduces dependence on the default admin  
+  - Limits access based on job roles  
+  - Improves accountability and auditability  
+
+### Administrator Profiles
+- New administrator accounts are **not created the same way** as user accounts.  
+- **Administrator profiles** define admin permissions.  
+  - Each permission can be set to **Read/Write**, **Read**, or **None**.  
+- Role-based access helps enforce the principle of least privilege and minimizes security risks.  
+
+---
+
+## Interfaces and Network Configuration
+
+### Physical and Virtual Interfaces
+- Interfaces enable traffic to flow between:
+  - Internal networks
+  - The internet
+  - Other network segments  
+- FortiGate allows configuration of both **physical** and **virtual** interfaces to manage and segregate traffic.
+
+### Interface Configuration Options
+Each interface can be configured with:
+- Alias (friendly name)  
+- IP address assignment  
+- Administrative access control  
+- DHCP server settings  
+- Interface scaling options (for load balancing or redundancy)
+
+---
+
+## VLANs (Virtual Local Area Networks)
+
+### Overview
+- VLANs divide a single physical LAN into multiple **virtual networks**.  
+- Each VLAN forms its own **broadcast domain**.  
+- Traffic between VLANs is **tagged** using a VLAN ID.  
+- The most common tagging protocol is **IEEE 802.1Q**.
+
+### Benefits of VLANs
+- Isolate devices for better security  
+- Reduce unnecessary broadcast traffic  
+- Segregate network traffic by type (e.g., user, voice, or management networks)
+
+---
+
+## VLAN Deployment Modes
+
+### 1. NAT Mode (Layer 3)
+- VLANs function as **Layer 3 subinterfaces** on physical ports.  
+- Each subinterface has a unique VLAN ID.  
+- FortiGate adds or removes VLAN tags depending on packet direction.  
+- **Security policies** can be applied individually to each VLAN subinterface.  
+- Enables FortiGate to control traffic between internal VLANs and external networks.
+
+### 2. Transparent Mode (Layer 2)
+- Operates as a **Layer 2 bridge**.  
+- VLAN-tagged traffic passes through the device while still applying security features such as:
+  - Antivirus scanning  
+  - Web filtering  
+  - Intrusion prevention  
+- Some services (e.g., SSL VPNs, DHCP servers, full NAT) are **not supported** in this mode.  
+- Ideal when **network changes must be minimal**.  
+- Requires matching VLAN subinterfaces on both internal and external interfaces.
+
+### 3. Virtual VLAN Switch (Supported Models)
+- Allows hardware switch ports to operate as a **managed Layer 2 switch**.  
+- Ports can be:
+  - Assigned to specific VLANs, or  
+  - Configured as **trunk ports** for VLAN tagging.  
+- Useful in **High Availability (HA)** setups or when extending VLANs between devices.
+
+---
+
+## DHCP and IP Configuration
+
+- FortiGate can run **one or more DHCP servers** on any interface.  
+- Simplifies IP management for connected hosts.  
+- Supports both static and dynamic IP address allocation.
+
+---
+
+## Static Routing
+
+### Overview
+- **Static routing** is the most basic form of network routing configuration.  
+- FortiGate includes a **default route** to its gateway, enabling internet access for internal devices.  
+- Each static route includes:
+  - **Destination** – Determines which traffic matches the route  
+  - **Gateway Address** – The next-hop IP FortiGate forwards traffic to  
+  - **Interface** – The physical or virtual interface used to send the traffic  
+
+### Default Route
+- The **default route** tells FortiGate where to send traffic when there is **no exact match** in the routing table.  
+- Static routes remain in the configuration until deleted manually.
+
+### Management and Troubleshooting
+- All configured routes are visible under **Network → Static Routes** in the FortiGate GUI.  
+- Creating a static route does not guarantee its usage; possible reasons include:
+  - Misconfigured route parameters  
+  - Associated port is down or disabled  
+  - A more specific or preferred route exists  
+
+**Tip:** Checking the **routing table** should be one of the first troubleshooting steps when diagnosing network connectivity issues.
+
+---
+
+## Summary
+This lesson covers essential FortiGate networking concepts, including administrator account management, VLAN segmentation, interface configuration, DHCP setup, and static routing.  
+Understanding these fundamentals ensures proper network segmentation, secure administrative access, and reliable data flow between internal and external networks.
