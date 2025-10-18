@@ -1,0 +1,87 @@
+# Lesson 05: Inspect SSL Traffic  
+**Course:** FortiGate Certified Associate (FCA)  
+**Duration:** 20 minutes  
+
+---
+
+## Learning Objectives
+- Describe why SSL traffic should be inspected  
+- Explain how SSL inspection works in FortiGate  
+- Configure SSL inspection within a firewall policy  
+
+---
+
+## 1. Why SSL Traffic Should Be Inspected
+HTTPS encryption protects user privacy but also allows attackers to hide malicious activity inside encrypted traffic. Since traditional firewalls cannot see inside SSL/TLS streams, they cannot detect malware, phishing, or data exfiltration that occurs over encrypted channels.  
+
+**SSL/TLS Inspection** enables FortiGate to decrypt, inspect, and re-encrypt traffic, allowing full visibility and enforcement of security policies.
+
+### Types of SSL Inspection
+1. **Certificate Inspection**  
+   - Examines the SSL/TLS handshake and validates the server certificate without decrypting traffic content.  
+   - Uses minimal resources and avoids browser certificate warnings.  
+   - Only supports basic security functions such as web filtering.  
+   - Useful when performance or privacy is a higher priority than deep inspection.  
+
+2. **Deep Inspection (Full SSL Inspection)**  
+   - FortiGate intercepts and decrypts traffic between client and server, inspects the content, and re-encrypts it before sending it to the destination.  
+   - Enables full security scanning features, including antivirus, IPS, application control, and DLP.  
+   - Protects against threats using encrypted protocols such as HTTPS, SMTPS, POP3S, IMAPS, and FTPS.  
+   - Can trigger browser certificate warnings if the FortiGate CA certificate is not trusted.  
+
+---
+
+## 2. How SSL Inspection Works in FortiGate
+When an SSL/TLS session begins, FortiGate intercepts the handshake and verifies the server certificate.  
+- **Certificate Inspection**: FortiGate validates the certificate’s authenticity, expiration, and domain match but does not decrypt the payload.  
+- **Deep Inspection**: FortiGate impersonates the intended server using its own CA certificate. It decrypts and inspects the content, applies security scans, then re-encrypts the traffic for delivery to the actual destination.
+
+Deep inspection introduces certificate warnings because the FortiGate-generated certificate is not issued by a public trusted authority. To prevent this, organizations deploy the FortiGate CA certificate to client devices using methods such as Active Directory Group Policy or MDM.
+
+---
+
+## 3. Configuring SSL Inspection in a Firewall Policy
+
+### Applying SSL Inspection
+To enable SSL inspection:
+1. Navigate to **Policy & Objects > Firewall Policy**.  
+2. Edit or create a policy that matches HTTPS traffic.  
+3. Under **Security Profiles**, enable **SSL/SSH Inspection**.  
+4. Select the appropriate inspection profile.  
+
+---
+
+### Preloaded SSL Inspection Profiles
+FortiOS includes four predefined profiles, three of which are read-only:
+
+| Profile | Type | Editable | Description |
+|----------|------|-----------|-------------|
+| certificate-inspection | Basic | No | Validates SSL/TLS certificates only. Does not decrypt traffic. |
+| deep-inspection | Full | No | Performs complete decryption and re-encryption of traffic for full inspection. May cause browser warnings if FortiGate CA is untrusted. |
+| no-inspection | None | No | Passes encrypted traffic without inspection. |
+| custom-deep-inspection | Full | Yes | A customizable profile that can be cloned or modified for tailored inspection behavior. |
+
+---
+
+### Preventing Certificate Warnings
+When using deep inspection, browsers may display “connection not private” warnings. To prevent this:
+1. **Install the FortiGate CA certificate** on all client devices as a trusted root certificate.  
+   - Export from *System > Certificates* and deploy via Group Policy or MDM.  
+2. **Use a CA-issued SSL certificate** for re-signing traffic.  
+   - The certificate must include:  
+     - `basicConstraints: CA=TRUE`  
+     - `keyUsage: keyCertSign`  
+
+---
+
+## 4. CLI and Monitoring Commands
+
+```bash
+# View configured SSL inspection profiles
+show full-configuration firewall ssl-ssh-profile
+
+# Display active SSL sessions
+diagnose sys session list | grep ssl
+
+# Monitor SSL inspection logs or errors
+diagnose debug application sslvpn -1
