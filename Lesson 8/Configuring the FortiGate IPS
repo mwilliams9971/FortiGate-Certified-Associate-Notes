@@ -1,0 +1,152 @@
+# Lesson 08: Configuring the FortiGate Intrusion Prevention System (IPS)  
+**Course:** FortiGate Certified Associate (FCA)  
+ 
+
+---
+
+## Learning Objectives
+- Describe what an Intrusion Prevention System (IPS) is  
+- Explain how an IPS can detect and block malicious network activity  
+- Configure IPS on a FortiGate device  
+- Identify best practices when working with an IPS  
+
+---
+
+## 1. What is an Intrusion Prevention System (IPS)?
+An **Intrusion Prevention System (IPS)** is a network security technology that analyzes traffic in real time to detect and prevent malicious activity before it reaches its destination.  
+
+FortiGate’s IPS engine uses **IPS sensors** to identify and mitigate threats by:
+- Monitoring and analyzing network traffic in real time  
+- Detecting and blocking known attacks and protocol anomalies  
+- Blocking access to malicious URLs and Command-and-Control (C&C) servers  
+
+### IDS vs IPS
+| System | Function |
+|---------|-----------|
+| **IDS (Intrusion Detection System)** | Detects and logs suspicious traffic but does not block it. |
+| **IPS (Intrusion Prevention System)** | Detects and blocks malicious traffic in real time. |
+
+FortiGate operates primarily as an **IPS (inline)**, actively preventing threats rather than just detecting them.
+
+### IPS Placement in the Network
+- The IPS engine operates **inline** within the firewall policy inspection flow.  
+- It inspects traffic **after routing and NAT**, but before forwarding.  
+- IPS can be applied to **both inbound and outbound** traffic depending on policy direction.
+
+---
+
+## 2. How IPS Detects and Blocks Malicious Activity
+When the IPS engine detects potentially harmful traffic, it can take various actions such as logging, alerting, resetting sessions, or blocking the connection entirely.  
+
+FortiGate uses two main detection techniques:
+
+### a. Protocol Decoders
+- Attackers often use **malformed or nonstandard packets** to bypass firewalls.  
+- Protocol decoders analyze packet structure and ensure it conforms to protocol standards (HTTP, FTP, DNS, etc.).  
+- FortiGate identifies protocols regardless of the port used, allowing for more accurate detection.  
+- Once a protocol is identified, FortiGate applies **only relevant signatures** for that protocol to improve efficiency and accuracy.
+
+### b. Signatures
+- A **signature** is a predefined pattern representing a known attack or exploit.  
+- The IPS compares traffic to the **FortiGuard signature database**.  
+- If a match is found, FortiGate performs the configured action (e.g., block, reset, or log).  
+- Signature-based detection is highly accurate for known threats but cannot identify zero-day or unknown attacks.  
+- FortiGate automatically receives **hourly or daily signature updates** from **FortiGuard Labs** to maintain protection.
+
+#### Signature Types
+- **Predefined (System):** Supplied and updated by FortiGuard.  
+- **Custom:** Created by administrators for specific internal threats or patterns.  
+
+---
+
+## 3. Configuring the FortiGate IPS
+Administrators can use built-in IPS sensors or create custom ones for specific environments.
+
+### Configuration Steps
+1. **Select or Create an IPS Sensor**  
+   - Navigate to *Security Profiles > Intrusion Prevention.*  
+   - Use an existing sensor or clone it to create a custom configuration.  
+
+2. **Select Signatures and Filters**  
+   - Choose which signatures or filters to include.  
+   - Filters can be based on:  
+     - **Severity:** Critical, High, Medium, Low, Info  
+     - **Target:** Client or Server  
+     - **Protocol/Application:** HTTP, DNS, FTP, etc.  
+     - **Operating System** or **Vulnerability Type**  
+   - Optionally enable blocking of:  
+     - **Malicious URLs**  
+     - **Botnet Command-and-Control (C&C) traffic**
+
+3. **Apply the IPS Sensor to a Firewall Policy**  
+   - Go to *Policy & Objects > Firewall Policy.*  
+   - Edit or create a policy for the traffic to inspect.  
+   - Under *Security Profiles*, enable **IPS** and select the desired sensor.
+
+4. **Monitor Logs**  
+   - Review detections under *Log & Report > Intrusion Prevention.*  
+   - Use *FortiView > Threats* for real-time analysis.
+
+---
+
+## 4. IPS Actions
+FortiGate IPS can take the following actions when a signature match occurs:
+
+| Action | Description |
+|---------|--------------|
+| **Default** | Executes the default response defined by FortiGuard for that signature. |
+| **Allow** | Permits the traffic without intervention. |
+| **Monitor** | Allows the traffic but logs the event. |
+| **Block** | Drops the packet or session to stop the attack. |
+| **Reset** | Sends TCP resets to terminate the session on both sides. |
+| **Quarantine** | Isolates the source or host to prevent further connections. |
+
+---
+
+## 5. Best Practices for Working with IPS
+
+1. **Keep the IPS Database Updated**  
+   - Ensure FortiGate regularly synchronizes with FortiGuard to receive the latest signatures.  
+   - Updates occur automatically by default (typically every hour) but can also be triggered manually.  
+
+2. **Use Default Sensors as Templates**  
+   - Default IPS sensors provide strong protection for general use.  
+   - **Clone and customize** rather than editing built-in sensors directly.  
+
+3. **Inspect Both Inbound and Outbound Traffic**  
+   - Threats may originate from external attackers or compromised internal hosts.  
+   - Apply IPS on both ingress and egress policies for complete coverage.  
+
+4. **Enable SSL Inspection**  
+   - Without SSL inspection, IPS cannot analyze encrypted traffic (HTTPS, SMTPS, IMAPS, etc.).  
+   - Always combine IPS with **Deep SSL Inspection** when inspecting encrypted protocols.  
+
+5. **Tune the IPS to Reduce False Positives**  
+   - Begin with default settings and monitor logs.  
+   - Adjust specific signatures or severities as needed to reduce false alerts.  
+
+6. **Monitor IPS Logs Regularly**  
+   - Logs are available under *Log & Report > Intrusion Prevention*.  
+   - Real-time statistics can be viewed in *FortiView > Threats* or *FortiView > Sources.*  
+   - For detailed analysis, use **FortiAnalyzer** for centralized logging.  
+
+7. **Performance Considerations**  
+   - IPS and SSL inspection can increase CPU load.  
+   - Apply IPS selectively to critical security zones to maintain performance balance.  
+
+---
+
+## 6. CLI and Monitoring Commands
+
+```bash
+# Display configured IPS sensors
+show full-configuration ips sensor
+
+# Check FortiGuard IPS update status
+get system fortiguard-service status
+
+# Monitor real-time IPS activity
+diagnose ips monitor statistics
+
+# Display IPS-related log entries
+execute log display | grep ips
