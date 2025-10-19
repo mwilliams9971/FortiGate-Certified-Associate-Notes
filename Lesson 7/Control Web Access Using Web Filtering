@@ -1,0 +1,120 @@
+# Lesson 07: Control Web Access Using Web Filtering  
+**Course:** FortiGate Certified Associate (FCA)  
+**Duration:** 30 minutes  
+
+---
+
+## Learning Objectives
+- Understand why web filtering is important  
+- Describe FortiGuard web filter categories  
+- Configure and apply web filtering in FortiGate  
+
+---
+
+## 1. Why Use Web Filtering
+Web filtering helps organizations control user access to websites and manage bandwidth usage. By categorizing and regulating web content, administrators can maintain security, productivity, and compliance.  
+
+**Benefits of Web Filtering**
+- Controls or tracks which websites users visit  
+- Limits access to distracting or inappropriate websites  
+- Reduces network congestion and bandwidth misuse  
+- Decreases exposure to malware, phishing, and malicious domains  
+- Helps meet compliance standards and reduces legal liability  
+- Improves overall network security and user productivity  
+
+---
+
+## 2. FortiGuard Categories
+FortiGate web filtering relies on the **FortiGuard Web Filter Service**, which classifies websites into categories based on their **dominant content**.  
+
+Each category includes websites grouped by purpose or theme, allowing policies to permit, block, or monitor access based on the organization’s needs.
+
+### Category Structure
+- Categories are designed for three major user groups:
+  - **Enterprise**
+  - **Education**
+  - **Home and Family**
+
+**Examples**
+- *Twitter* → **General Interest – Personal**  
+- *Dropbox* → **Bandwidth Consuming**
+
+### Category Hierarchy
+Categories can contain **subcategories**, which provide more granular filtering.  
+
+**Examples:**
+- **General Interest – Personal**
+  - Social Media  
+  - News  
+  - Media  
+- **Bandwidth Consuming**
+  - File Sharing and Storage  
+  - Internet Telephony  
+  - Download Sites  
+  - Streaming Media  
+
+To view a full list of FortiGuard categories, visit:  
+[https://fortiguard.com/webfilter/categories](https://fortiguard.com/webfilter/categories)
+
+---
+
+### How Category-Based Filtering Works
+- FortiGate inspects the destination website and determines its **FortiGuard-assigned category**.  
+- The action taken (allow, block, monitor, etc.) depends on the **configured behavior** for that category within the Web Filter profile, not on specific URLs.  
+
+### Web Filter Category Actions
+| Action | Description |
+|--------|--------------|
+| **Allow** | Grants access to all sites within the category. |
+| **Block** | Denies access and displays a replacement message. A log entry is generated. |
+| **Monitor** | Allows access but logs user activity, including URLs and IPs. |
+| **Warning** | Displays a warning message before granting access. Users can proceed at their own risk. |
+| **Authenticate** | Allows access only after the user provides valid credentials. Can be applied to individuals or user groups, with configurable session timers. |
+
+**Example Behavior:**
+- A user attempting to access a blocked social media site sees a “website blocked” message.  
+- A monitored site allows access but generates log entries for auditing.  
+
+---
+
+## 3. Configuring FortiGate Web Filtering
+Web filtering is implemented through **Web Filter Security Profiles**, which define category actions and are applied to firewall policies to inspect and control HTTP/HTTPS traffic.
+
+### Configuration Steps
+1. **Verify Licensing**
+   - Ensure the FortiGate device has an active **FortiGuard Web Filtering subscription**.  
+
+2. **Check Website Categorization**
+   - Use *Security Profiles > Web Filter > Lookup* or visit FortiGuard.com to see how a specific website is categorized.  
+
+3. **Create or Edit a Web Filter Profile**
+   - Navigate to *Security Profiles > Web Filter*.  
+   - Create a new profile or edit an existing one.  
+   - Define category actions (Allow, Block, Monitor, etc.).  
+   - Optionally, enable:
+     - **Safe Search enforcement** for search engines  
+     - **HTTPS Inspection** (requires SSL inspection profile)  
+
+4. **Apply the Web Filter Profile to a Firewall Policy**
+   - Go to *Policy & Objects > Firewall Policy*.  
+   - Edit or create a policy for outbound internet access.  
+   - Under **Security Profiles**, enable *Web Filter* and select the desired profile.  
+   - Enable **Logging** if you want to record access attempts.  
+
+5. **Test and Verify**
+   - Access websites from different categories to ensure filtering behaves as expected.  
+   - Confirm logs appear in *Log & Report > Web Filter Logs*.  
+
+---
+
+## 4. CLI and Monitoring Commands
+
+```bash
+# Display configured web filter profiles
+show full-configuration webfilter profile
+
+# Check category rating of a website
+diagnose webfilter url <website>
+
+# View web filter logs
+execute log display | grep webfilter
