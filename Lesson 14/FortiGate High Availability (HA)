@@ -1,0 +1,128 @@
+# Lesson 14: FortiGate High Availability (HA)  
+**Course:** FortiGate Certified Associate (FCA)  
+
+
+---
+
+## Learning Objectives
+- Describe what High Availability (HA) is and its benefits  
+- Explain how FortiGate HA works  
+- Configure FortiGate HA  
+- Apply best practices when using HA  
+
+---
+
+## 1. What is FortiGate High Availability (HA)
+**High Availability (HA)** allows multiple FortiGate firewalls to operate as a **cluster**, providing redundancy and fault tolerance to ensure **network reliability and continuous service**.
+
+If one firewall fails, another automatically takes over — preventing service interruption and maintaining uptime.
+
+### Key Benefits
+- **Redundancy:**  
+  Maintains business continuity during outages or upgrades by ensuring that a backup unit can instantly take over.
+
+- **Configuration & Session Synchronization:**  
+  Configuration data and active sessions are synchronized across cluster members, enabling seamless failover without session loss.
+
+- **Simplified Management:**  
+  All configuration changes made on the **primary (master)** FortiGate are automatically synchronized to all **secondary (slave)** members.
+
+---
+
+## 2. How FortiGate HA Works
+
+FortiGate HA operates across several layers to manage synchronization, failover, and cluster behavior.
+
+### Layer 1 – Cluster Formation
+- When the HA cluster is created, the devices elect a **primary unit** (also called *master*).  
+- The first device added typically becomes the primary initially.  
+- The **primary** handles all cluster management and processes traffic.  
+- The **secondary** units remain synchronized and take over automatically if the primary fails.
+
+### Layer 2 – Primary Election Process
+During cluster initialization or failover, FortiGate compares multiple parameters to select the new primary:
+
+| Priority Order | Election Criteria | Description |
+|----------------|------------------|--------------|
+| 1 | **Monitored Interfaces** | Unit with the fewest failed monitored interfaces becomes primary. |
+| 2 | **Uptime** | Unit with the longest HA uptime. |
+| 3 | **Priority Value** | Highest manually assigned HA priority value wins. |
+| 4 | **Serial Number** | Highest serial number used as final tiebreaker. |
+
+> Election Order: **Monitored Interfaces → Uptime → Priority → Serial Number**
+
+### Layer 3 – Override Option
+- If **Override** is enabled, the device with the **highest priority value** will always become primary, even after failover recovery.  
+- Downside: This may cause **double failovers** (once when the primary fails, again when it comes back online).
+
+---
+
+## 3. FortiGate HA Protocols and Synchronization
+
+### FortiGate Clustering Protocol (FGCP)
+The **FGCP** is the core protocol behind HA functionality. It performs:
+- Member discovery and primary election  
+- Configuration and session synchronization  
+- Health monitoring of all members  
+- Assignment of **virtual MAC addresses**  
+- Synchronization of **TCP sessions** (when enabled)
+
+### Synchronized Data
+| **Synchronized** | **Not Synchronized** |
+|------------------|----------------------|
+| Configuration settings (most) | Dashboard widgets |
+| Forwarding Information Base (FIB) | HA override status |
+| DHCP leases | Device priority value |
+| ARP table | HA management interface configuration |
+| FortiGuard definitions | In-band management interface settings |
+| IPsec tunnel SAs | Licenses (except FortiToken) |
+| Session tables (if enabled) | Web/email filter cache |
+
+---
+
+## 4. HA Modes
+
+| Mode | Description | Use Case |
+|------|--------------|----------|
+| **Active-Passive (A-P)** | Only the active unit processes traffic. The standby unit takes over during failure. | Simpler setup, ideal for reliability-focused networks. |
+| **Active-Active (A-A)** | All units share traffic processing simultaneously. | Recommended for performance and load balancing. |
+
+---
+
+## 5. HA Requirements
+
+All FortiGate units in the cluster must have matching specifications and configurations.
+
+### Hardware and Software Requirements
+- Same **FortiGate model**  
+- Same **FortiOS firmware version and build**  
+- Same **license level** (cluster adopts lowest if mismatched)  
+- Same **storage configuration** (SSD/HDD)  
+- Same **operating mode** (NAT or Transparent)
+
+### Cluster Configuration Parameters
+The following must match across all members:
+- **Group Name**  
+- **Group ID**  
+- **Password**  
+- **Heartbeat Interface Settings**
+
+---
+
+## 6. Configuring FortiGate HA
+
+### Step 1 – Enable HA and Define Cluster Settings
+- *GUI Path:* `System > HA`
+- Set:
+  - **Mode:** Active-Passive or Active-Active  
+  - **Group Name** and **Group ID**  
+  - **Password** for secure communication  
+  - **Priority Value** (higher = more likely to become primary)  
+  - **Heartbeat Interfaces** (minimum 2 recommended)
+
+### Step 2 – Verify Member Synchronization
+- Once added, the secondary device will automatically synchronize configuration and session data with the primary.  
+- *CLI:*  
+  ```bash
+  get system ha status
+  diagnose sys ha showcsum
