@@ -1,0 +1,151 @@
+# Lesson 10: Creating IPsec Virtual Private Networks  
+**Course:** FortiGate Certified Associate (FCA)  
+**Duration:** 30 minutes  
+
+---
+
+## Learning Objectives
+- Understand what IPsec Virtual Private Networks (VPNs) are and why they are used  
+- Explain how FortiGate IPsec VPNs work  
+- Configure IPsec VPNs using FortiGate devices  
+- Review best practices for IPsec VPN implementation  
+
+---
+
+## 1. Understanding IPsec Virtual Private Networks
+**IPsec (Internet Protocol Security)** is a suite of open standards used to create secure connections—called **Virtual Private Networks (VPNs)**—between devices located on different or geographically distant networks.
+
+### IPsec Security Services
+- **Data Authentication** – verifies the identity of the data source  
+- **Data Integrity** – prevents modification or tampering  
+- **Data Confidentiality** – encrypts traffic to ensure privacy  
+- **Anti-Replay Protection** – prevents packet-replay attacks  
+
+### Advantages of IPsec VPNs
+- Operate end-to-end without relying on third-party carriers—only IP connectivity between peers is required.  
+- Support both **Remote Access** and **Site-to-Site** topologies.  
+
+| Type | Description | Connection Behavior |
+|------|--------------|---------------------|
+| **Remote Access VPN** | A client connects securely to a remote FortiGate or network. | Client always initiates; often uses **MFA**. FortiGate supports **FortiClient** and other standards-compliant clients. |
+| **Site-to-Site VPN** | Two or more gateways connect their internal networks. | Either side can initiate. Supports **hub-and-spoke**, **partial mesh**, or **full mesh** designs. FortiGate interoperates with other vendors’ IPsec devices. |
+
+---
+
+## 2. How FortiGate IPsec VPNs Work
+After a VPN tunnel is established, devices on either side can communicate as if they were on the same logical network.  
+FortiGate uses **IKE (Internet Key Exchange)** to dynamically negotiate keys and security parameters.
+
+### IKE Versions
+- **IKE v1** – widely supported, uses a two-phase negotiation.  
+- **IKE v2** – newer, faster, and more secure; recommended for new deployments.  
+
+#### IKE v1 Negotiation
+1. **Phase 1 – Establish Secure Channel**  
+   - Peers authenticate and set up a secure control channel.  
+   - Proposals must match on both sides:  
+     - Mode (Main or Aggressive)  
+     - Authentication Method  
+     - Encryption Algorithm  
+     - Hashing Algorithm  
+     - Diffie-Hellman Group  
+2. **Phase 2 – Establish Data Sub-Tunnel**  
+   - Defines which subnets are protected and how data will be encrypted.  
+   - Parameters must match:  
+     - Encryption Algorithm  
+     - Hashing Algorithm  
+     - Diffie-Hellman Group (if PFS enabled – recommended)  
+
+#### IKE v2 Enhancements
+- No distinct “phase 1/phase 2”; performs all negotiations in fewer messages.  
+- **Not backward compatible** with IKE v1.  
+- Improvements:  
+  - Lower latency and bandwidth overhead  
+  - Sequence numbers and acknowledgments improve reliability  
+  - Supports **EAP** for flexible authentication  
+  - Supports **PPK (Pre-Shared Keys with PPK)** and **asymmetric authentication**  
+  - Enables stronger algorithms such as **PRF-SHA** and **AES-GCM**  
+  - More resilient against DoS attacks  
+
+---
+
+## 3. Configuring IPsec VPNs on FortiGate
+
+### Step 1 – Define Protected Networks
+- Specify **local** and **remote subnets** that should communicate through the tunnel.  
+- For **remote-access VPNs**, both subnets are defined on the server (FortiGate) side.  
+- For **site-to-site VPNs**, subnet definitions must **mirror** each other on both peers.
+
+### Step 2 – Create the VPN
+- Use the **VPN Wizard** under *VPN > IPsec Tunnels* to simplify setup, or create a **Custom Tunnel** for granular control.  
+- Configure IKE parameters, authentication, and encryption settings.  
+- Example parameters (must match on both peers):  
+  - Encryption: AES-256  
+  - Hashing: SHA-256  
+  - DH Group: 14 (2048-bit)  
+  - Authentication: Pre-Shared Key or Certificate  
+
+### Step 3 – Assign to Firewall Policy
+- Add a policy allowing traffic between the internal and VPN interfaces.  
+- Enable **NAT** if required.  
+- Apply any relevant Security Profiles (IPS, AV, Web Filter, etc.).
+
+### Step 4 – Verify and Monitor
+- Use the **GUI VPN Monitor** to view tunnel status (Phase 1 and Phase 2 details).  
+- Check *Log & Report > VPN Events* for negotiation or failure messages.  
+
+---
+
+## 4. Encapsulating Security Payload (ESP)
+ESP provides:
+- **Encryption**, **Integrity**, and **Origin Authentication** for IP packets.  
+- Authentication of peers is handled during IKE negotiation.
+
+### Common Algorithms
+| Type | Examples | Notes |
+|-------|-----------|-------|
+| **Encryption** | DES (weak – deprecated), 3DES (slow), AES (128/192/256 bit) | AES is preferred; 3DES still supported for legacy systems. |
+| **Hashing** | MD5 (weak), SHA-1 (deprecated), SHA-2 (secure – various bit lengths) | Use SHA-256 or higher for modern deployments. |
+
+---
+
+## 5. Best Practices for VPN Deployment
+1. **Keep Devices Patched**  
+   - VPN gateways are high-value targets; apply firmware and security updates promptly.  
+2. **Use Strong Algorithms**  
+   - Select encryption/hashing combinations that meet organizational or compliance requirements.  
+   - On models with **Content Processors (CPs)**, offload encryption/decryption to improve performance.  
+3. **Validate Feature Compatibility**  
+   - Ensure both peers support the same IPsec features and algorithms.  
+   - Older or third-party devices may lack certain options.  
+4. **Open Required Ports**  
+   - UDP 500 (for IKE) and UDP 4500 (for NAT-T) must be permitted through intermediate firewalls.  
+5. **Choose Appropriate IKE Mode (for IKE v1)**  
+   - **Main Mode** – more secure; default for site-to-site VPNs.  
+   - **Aggressive Mode** – faster but less secure; default for remote-access VPNs.  
+6. **Use Perfect Forward Secrecy (PFS)**  
+   - Generates unique keys per session to enhance confidentiality.  
+7. **Monitor Tunnels Regularly**  
+   - Use *Monitor > IPsec Tunnels* to view up/down status, byte counts, and peer information.  
+   - Confirm both Phase 1 and Phase 2 are active.  
+
+---
+
+## 6. CLI and Monitoring Commands
+
+```bash
+# View configured IPsec tunnels
+show vpn ipsec phase1-interface
+show vpn ipsec phase2-interface
+
+# Check tunnel status
+get vpn ipsec tunnel summary
+diagnose vpn tunnel list
+
+# Manually bring tunnel up or down
+diagnose vpn tunnel up <name>
+diagnose vpn tunnel down <name>
+
+# Display IKE negotiation details
+diagnose debug application ike -1
+diagnose debug enable
