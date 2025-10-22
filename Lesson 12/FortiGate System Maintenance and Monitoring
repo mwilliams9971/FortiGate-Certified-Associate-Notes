@@ -1,0 +1,88 @@
+# Lesson 12: FortiGate System Maintenance and Monitoring  
+**Course:** FortiGate Certified Associate (FCA)  
+
+---
+
+## Learning Objectives
+- Perform common FortiGate maintenance tasks  
+- Backup and restore a FortiGate configuration  
+- Upgrade FortiGate firmware  
+- Monitor FortiGate resource utilization  
+- Examine FortiGate licenses  
+- Monitor FortiGate logs  
+
+---
+
+## 1. Performing Common FortiGate Maintenance Tasks
+Regular maintenance ensures that the FortiGate device continues operating securely and efficiently.
+
+### Importance of Maintenance
+- Prevents **security breaches** by keeping firmware and signatures current  
+- Optimizes **system performance and stability**  
+- Helps meet **compliance requirements**  
+- Ensures **business continuity** during hardware failures or migrations  
+
+### Common Maintenance Tasks
+- Back up and restore configurations  
+- Perform firmware upgrades  
+- Monitor system resources (CPU, memory, disk)  
+- Review license status and renewals  
+- Monitor and analyze logs  
+
+---
+
+## 2. Backup and Restore Configuration
+Regular configuration backups protect against accidental misconfiguration, hardware failure, or data loss.
+
+### Key Points
+- Create backups **before major configuration changes or firmware upgrades.**  
+- Backups can be saved **locally**, to a **USB drive**, or to an **external management platform** (e.g., FortiManager).  
+- Restores are performed through the **GUI** under *System > Settings > Restore Configuration*.  
+- Devices with at least **512 MB of flash memory** can store local backups on the device itself.  
+- Store multiple backup versions securely in case of rollback needs.
+
+---
+
+## 3. Upgrading FortiGate Firmware
+Fortinet regularly releases firmware updates to add features, fix bugs, and improve performance.
+
+### Steps and Recommendations
+1. **Check for new releases:**  
+   - FortiGate displays a notification when new firmware is available if a valid license is active.  
+2. **Review release notes:**  
+   - Ensure compatibility with your FortiGate model and current version.  
+3. **Back up your configuration** before upgrading.  
+4. **Follow the Fortinet Upgrade Path Tool** for multi-version jumps.  
+   - Available on the Fortinet Customer Service & Support Portal.  
+   - Following the recommended path ensures stability and compatibility.  
+5. **Upgrade via GUI or CLI:**  
+   - *GUI:* `System > Firmware`  
+   - *CLI:*  
+     ```bash
+     execute restore image tftp <filename> <server_ip>
+     execute reboot
+     ```  
+6. **Firmware maturity tags (FortiOS 7.2+):**  
+   - **F** = Feature release (new functionality)  
+   - **M** = Mature release (stability and long-term support)  
+
+**Tip:** When in doubt, select an **M-release** for production environments.
+
+---
+
+## 4. Monitoring FortiGate Resource Utilization
+Continuous monitoring helps detect performance bottlenecks early.
+
+### Key Metrics
+- **CPU Usage:** High sustained usage may indicate heavy inspection load.  
+- **Memory Usage:** Excessive memory consumption can impact session handling.  
+- **Disk Space:** Needed for logs and quarantine storage.  
+- **Session Count / Log Rate:** Indicates throughput and logging volume.  
+
+### Monitoring Tools
+- **Dashboard Widgets** – configurable to show CPU, memory, and session information.  
+- **CLI Commands:**
+  ```bash
+  get system performance status
+  diagnose sys top
+  get system stat
