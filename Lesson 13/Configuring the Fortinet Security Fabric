@@ -1,0 +1,147 @@
+# Lesson 13: Configuring the Fortinet Security Fabric  
+**Course:** FortiGate Certified Associate (FCA)  
+**Duration:** 30 minutes  
+
+---
+
+## Learning Objectives
+- Describe the importance and benefits of implementing the Fortinet Security Fabric  
+- Explain how the Fortinet Security Fabric protects networks and simplifies administration  
+- Configure the Fortinet Security Fabric  
+
+---
+
+## 1. Importance and Benefits of the Fortinet Security Fabric
+The **Fortinet Security Fabric** is an enterprise-wide, integrated architecture that unifies multiple Fortinet and third-party security solutions.  
+It provides a **single pane of glass** for visibility, automation, and management across the entire network.
+
+### Key Benefits
+
+#### a. Unified Network Visibility
+- Offers both **logical** and **physical topology** views of all connected devices.  
+- Displays how devices are interconnected, their interfaces, security posture, and communication paths.  
+- Provides administrators with complete situational awareness.
+
+#### b. Object Synchronization
+- Synchronizes **firewall objects, addresses, and policies** across all Fabric members.  
+- Ensures configuration consistency throughout the environment.  
+
+#### c. Security Rating
+- Continuously analyzes the deployment to identify misconfigurations, vulnerabilities, and outdated firmware.  
+- Provides **actionable recommendations** to improve overall security posture and performance.  
+- Generates a **Security Fabric Score** for quick evaluation.
+
+#### d. Integration and Extensibility
+- Integrates natively with Fortinet products such as **FortiGate, FortiAnalyzer, FortiManager, FortiAP, FortiSwitch, FortiSandbox**, and more.  
+- Supports third-party vendor integration via **APIs and Fabric Connectors**, allowing external solutions (e.g., cloud, endpoint, and SIEM platforms) to participate in the fabric.
+
+#### e. Automatic Device Detection
+- Automatically identifies and adds new endpoints to the network topology.  
+- Devices with **FortiClient** provide enhanced telemetry and security visibility.  
+
+#### f. Centralized Management
+- Allows administrators to perform upgrades and configuration management centrally.  
+- The Fabric Root device ensures that firmware upgrades follow the **Fortinet-recommended upgrade path** automatically.  
+
+#### g. Automation and Orchestration
+- Enables **automated threat response** across multiple security layers without manual intervention.  
+- Example: If a FortiGate detects malware, it can trigger a quarantine action in FortiClient or isolate a switch port through FortiSwitch.  
+
+---
+
+## 2. How the Fortinet Security Fabric Works
+The Security Fabric links multiple Fortinet devices into a single cooperative ecosystem that shares telemetry, logs, and security intelligence.
+
+### Minimum Requirements
+- At least **two FortiGate firewalls** operating in **NAT mode**.  
+- One FortiGate acts as the **Fabric Root** (primary controller).  
+- **Centralized logging** through a **FortiAnalyzer** or **FortiCloud Logging** service.  
+
+### Recommended Additions
+To enhance capabilities, the Fabric can include:
+- **FortiManager** – centralized configuration and policy management.  
+- **FortiAnalyzer** – log analysis, reporting, and event correlation.  
+- **FortiAP / FortiSwitch** – extends network and security control to access layers.  
+- **FortiClient / EMS** – endpoint protection and compliance enforcement.  
+- **FortiSandbox, FortiWeb, FortiNDR, FortiDeceptor** – advanced detection and prevention.  
+
+The Fabric can also integrate third-party platforms (e.g., AWS, Azure, VMware NSX, ServiceNow) via **API connectors**, expanding protection and intelligence sharing.
+
+---
+
+## 3. Configuring the Fortinet Security Fabric
+
+### Step 1 – Configure Centralized Logging
+- Deploy a **FortiAnalyzer** or enable **FortiCloud logging** for centralized event storage.  
+- Configure each FortiGate device to send logs to the chosen platform:  
+  - *GUI Path:* `Log & Report > Log Settings`  
+  - *CLI Example:*
+    ```bash
+    config log fortianalyzer setting
+    set status enable
+    set server <FortiAnalyzer_IP>
+    end
+    ```
+
+### Step 2 – Configure the Root FortiGate
+- Select the FortiGate that will serve as the **Fabric Root**.  
+- *GUI Path:* `Security Fabric > Settings`  
+- Enable the Security Fabric on required interfaces.  
+- Set **“Serve as Fabric Root”** under Fabric Connector options.  
+- Configure log forwarding to the centralized logging platform.  
+- Optionally **pre-authorize downstream devices** to join the fabric.
+
+### Step 3 – Configure Downstream (Child) Devices
+- On each downstream FortiGate:  
+  - Enable the Security Fabric on the required interfaces.  
+  - Under Fabric Connector, choose **“Join Existing Fabric.”**  
+  - Specify the IP address of the Root FortiGate.  
+- Once connected, the Root FortiGate will prompt to **authorize** the new device.
+
+### Step 4 – Authorize Devices on the Root FortiGate
+- Approve the downstream devices from the Root’s dashboard:  
+  - *GUI Path:* `Security Fabric > Topology`  
+  - Verify device status, connectivity, and assigned roles.  
+- Once authorized, all Fabric devices appear in the network topology map.
+
+---
+
+## 4. Monitoring and Managing the Fabric
+
+### Topology View
+- Accessible under *Security Fabric > Physical Topology* or *Logical Topology*.  
+- Displays all connected Fortinet and third-party devices.  
+- Allows administrators to drill down into configuration, firmware version, and detected threats per device.
+
+### Security Rating
+- Found under *Security Fabric > Security Rating*.  
+- Provides real-time evaluation of configuration quality, compliance, and best practices.  
+- Assigns a score and recommendations to improve the overall security posture.
+
+### Automation
+- Located under *Security Fabric > Automation*.  
+- Administrators can create **playbooks** that trigger automatic actions based on specific events (e.g., virus detected → isolate device).
+
+---
+
+## 5. CLI Commands for Fabric Management
+
+```bash
+# View Security Fabric configuration
+show system csf
+
+# Check Fabric members and roles
+get system csf status
+
+# Enable Security Fabric root mode
+config system csf
+set status enable
+set role root
+end
+
+# Enable and join an existing Fabric
+config system csf
+set status enable
+set role member
+set upstream-ip <root_IP>
+end
