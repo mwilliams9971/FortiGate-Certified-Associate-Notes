@@ -1,0 +1,136 @@
+# Lesson 15: Configuring FortiLink  
+**Course:** FortiGate Certified Associate (FCA)  
+**Duration:** 25 minutes  
+
+---
+
+## Learning Objectives
+- Describe what FortiLink is and its benefits  
+- Explain how FortiLink works  
+- Configure FortiLink  
+- Apply best practices when using FortiLink  
+
+---
+
+## 1. What is FortiLink and Its Benefits
+**FortiLink** is a proprietary Fortinet protocol that allows administrators to **manage FortiSwitches directly through a FortiGate firewall**, integrating switching and security under a single management platform — **no additional license required.**
+
+This centralizes control of both **network access and security policies** within the FortiGate interface.
+
+### Key Benefits
+- **Centralized Management:**  
+  Manage all connected FortiSwitches via the FortiGate GUI or CLI.  
+
+- **Simplified Deployment:**  
+  Supports multiple topologies (stacking, clustering, L3 FortiLink), making it scalable for networks of any size.  
+
+- **Enhanced Security:**  
+  VLANs and firewall policies can be uniformly enforced across FortiSwitch ports.  
+
+- **Scalability:**  
+  FortiSwitches can be automatically discovered and authorized by FortiGate, simplifying large-scale deployments.  
+
+---
+
+## 2. How FortiLink Works
+FortiLink uses a combination of **Fortinet-specific and industry-standard protocols** to establish and maintain communication between FortiGate and FortiSwitch devices.
+
+### Core Discovery Protocols
+- **FortiLink Protocol:**  
+  Default mechanism for discovering FortiSwitches.  
+  Discovery frames contain details such as the switch serial number and available ports.
+
+- **LLDP (Link Layer Discovery Protocol):**  
+  Used as an alternative or complementary discovery method.  
+  Essential during switch stacking, as it automatically configures inter-switch links as trunks.
+
+### Control and Management Protocols
+- **CAPWAP (Control and Provisioning of Wireless Access Points):**  
+  Fortinet’s implementation is used to:  
+  - Authenticate and authorize FortiSwitches  
+  - Perform health checks  
+  - Establish a secure management tunnel between FortiGate and FortiSwitch  
+  - Transfer firmware images when performing upgrades through the GUI  
+  - Forward FortiSwitch logs to the FortiGate  
+
+- **HTTPS / REST API:**  
+  Default protocols for FortiSwitch firmware updates and management operations.  
+
+- **Additional Supporting Protocols:**  
+  DHCP, DNS, NTP, and SSH are also used for configuration, time synchronization, and remote management tasks.
+
+---
+
+## 3. Configuring FortiLink
+
+### Step 1 – Enable Switch Controller
+- *GUI Path:* `WiFi & Switch Controller > FortiLink Interface`  
+- Enable the **Switch Controller feature** on the FortiGate.  
+- Create a **FortiLink Interface** that binds one or more FortiGate ports for switch management.
+
+### Step 2 – Configure the FortiLink Interface
+- Assign an **IP address** to the FortiLink interface.  
+- Optionally enable:
+  - **DHCP Server** – to automatically assign IPs to FortiSwitches.  
+  - **Automatic Switch Authorization** – allows discovered switches to be auto-approved.  
+  - **Split Interface Mode** – used when connecting an aggregate interface to multiple FortiSwitches for redundancy or distributed links.
+
+### Step 3 – Connect and Authorize FortiSwitches
+- Physically connect FortiSwitches to the FortiGate FortiLink port(s).  
+- Navigate to *WiFi & Switch Controller > Managed FortiSwitches* to view discovered devices.  
+- If **automatic authorization** is disabled, manually authorize switches from the GUI.  
+- Once authorized, switches become manageable directly through FortiGate.
+
+> **Note:**  
+> - Newer FortiSwitch models broadcast FortiLink discovery frames on **all ports by default**, simplifying setup.  
+> - Older models may require connection through specific “FortiLink-enabled” ports.
+
+---
+
+## 4. FortiLink Topologies
+
+| **Topology** | **Description** |
+|---------------|-----------------|
+| **Single FortiGate with FortiSwitch Stack** | One FortiGate manages multiple FortiSwitches connected in a **ring or daisy-chain** topology. The lead switch connects directly to the FortiGate. |
+| **HA FortiGate Cluster with FortiSwitch Stack** | In an **Active-Passive (AP) or Active-Active (AA)** FortiGate HA cluster, both FortiGate units connect to the first FortiSwitch in the stack for redundancy. |
+| **FortiLink over Layer-3 (L3 FortiLink)** | Enables management of **remote FortiSwitch “islands”** across routed networks — useful for distributed or multi-site deployments. |
+| **Standalone FortiGate with Dual-Homed FortiSwitch** | Provides high port density and redundancy using two tiers of FortiSwitches connected to multiple FortiGate ports. |
+
+---
+
+## 5. Best Practices for FortiLink
+
+1. **Use Link Aggregation (LACP):**  
+   - Combine multiple links between FortiGate and FortiSwitches for redundancy and higher throughput.
+
+2. **Maintain Firmware Compatibility:**  
+   - Keep both FortiGate and FortiSwitch on compatible firmware versions to prevent feature or communication issues.
+
+3. **Plan VLANs and Port Assignments in Advance:**  
+   - Avoid frequent reconfiguration by mapping VLAN and port usage before deployment.
+
+4. **Monitor Switch Health and Logs Regularly:**  
+   - Use *WiFi & Switch Controller > Managed FortiSwitches* or FortiView dashboards to check switch status and link health.  
+
+5. **Enable Auto-Authorization Carefully:**  
+   - Useful in large deployments, but review new devices before granting network access in sensitive environments.
+
+---
+
+## 6. Useful CLI Commands
+
+```bash
+# Display FortiLink interface configuration
+show system interface | grep FortiLink
+
+# Check switch discovery and authorization status
+get switch-controller managed-switch
+
+# Authorize a FortiSwitch manually
+execute switch-controller managed-switch authorize <switch_id>
+
+# View FortiSwitch connection status
+diagnose switch-controller managed-switch status
+
+# Check FortiLink split-interface configuration
+get switch-controller global
