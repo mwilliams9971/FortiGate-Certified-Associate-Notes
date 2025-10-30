@@ -3,7 +3,7 @@
 This repository contains my structured study notes for the **FortiGate Certified Associate (FCA)** course.  
 Each lesson includes summarized concepts, configuration steps, CLI examples, and monitoring guidance formatted for quick review and long-term reference.
 
-These notes are written to reinforce understanding of FortiGate firewall operations, configuration, and management — with added technical clarifications beyond the video content where useful.
+These notes are written to reinforce understanding of FortiGate firewall operations and for others to use if needed.
 
 ---
 
@@ -20,15 +20,4 @@ Topics include:
 
 Total course duration: approximately **5 hours** (Lessons 4–15).  
 
----
 
-## Repository Structure
-
-Each folder corresponds to a lesson and contains a detailed `README.md` file with:
-- **Learning Objectives**  
-- **Lesson Notes** and explanations  
-- **Configuration and CLI steps**  
-- **Monitoring methods and best practices**  
-- **Observations & questions** section for reflection  
-
-Example structure:
